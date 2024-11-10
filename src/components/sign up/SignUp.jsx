@@ -20,6 +20,8 @@ const handleResister =(e)=>{
     })
 }
 
+
+
   return (
     <div >
       <h1>Sign Up</h1>

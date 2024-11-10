@@ -1,12 +1,15 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
-import React, { useState } from "react";
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import React, { useRef, useState } from "react";
 import { auth } from "../../firebase.init";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
-   const [error,setError] = useState('')
+    const [error,setError] = useState('');
+  //  for collecting email
+   const emailRef = useRef('');
+   console.log(emailRef.current.value)
   // for to user account
-
+   const navigate= useNavigate()
   const handleLogin=(e)=>{
     e.preventDefault();
     const email = e.target.email.value;
@@ -16,7 +19,15 @@ const Login = () => {
     signInWithEmailAndPassword(auth,email,password)
     .then((result)=>{
         console.log(result.user)
-        setError("login succesfull")
+        if(!result.user.emailVerified){
+          setError("You nedd to varify your email");
+          return
+       }else{
+          setError("login succesfull");
+          setTimeout(() => {
+            navigate('/')
+          }, 700);
+       }
     }).catch(error =>{
       console.log("Error",error.message);
       setError("wrong email or password")
@@ -24,6 +35,24 @@ const Login = () => {
     console.log(email,password)
 
   }
+//  for forgot passwords
+  const handleForgetPass =()=>{
+    const email = emailRef.current.value;
+    if(!email){
+     console.log("please provide a valid email address");
+     setError("please provided a valid user emails")
+    }else{
+       // sent reset email
+      sendPasswordResetEmail(auth,email)
+      .then(()=>{
+          alert('password reset email send, please check your gmail')
+      })
+    }
+   
+
+  }
+
+
   return (
     <div className="hero bg-base-200 min-h-screen">
       <div className="hero-content flex-col lg:flex-row-reverse">
@@ -47,6 +76,7 @@ const Login = () => {
                 placeholder="email"
                 className="input input-bordered"
                 name="email"
+                ref={emailRef}
                 required
               />
             </div>
@@ -62,7 +92,7 @@ const Login = () => {
                 required
               />
               <label className="label">
-                <a href="#" className="label-text-alt link link-hover">
+                <a onClick={handleForgetPass} href="#" className="label-text-alt link link-hover">
                   Forgot password?
                 </a>
               </label>
